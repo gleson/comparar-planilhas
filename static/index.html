@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compara Planilhas</title>
+<link rel="stylesheet" href="/static/vendor/ag-grid.css">
+<link rel="stylesheet" href="/static/vendor/ag-theme-quartz.css">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>📊 Compara Planilhas</h1>
+  <button id="btn-toggle-setup" class="btn ghost hidden">⚙ Configuração</button>
+</header>
+
+<section id="setup" class="setup">
+  <div class="file-cards">
+    <div class="card" id="card-a">
+      <h2>Planilha A <span class="hint">(em cima)</span></h2>
+      <div class="file-row">
+        <input type="text" id="path-a" placeholder="Caminho do arquivo (csv, xls, xlsx, ods)">
+        <button class="btn" id="browse-a">Procurar…</button>
+      </div>
+      <div class="sheet-row hidden" id="sheet-row-a">
+        <label>Aba: <select id="sheet-a"></select></label>
+      </div>
+      <div class="file-info" id="info-a"></div>
+    </div>
+    <div class="card" id="card-b">
+      <h2>Planilha B <span class="hint">(embaixo)</span></h2>
+      <div class="file-row">
+        <input type="text" id="path-b" placeholder="Caminho do arquivo (csv, xls, xlsx, ods)">
+        <button class="btn" id="browse-b">Procurar…</button>
+      </div>
+      <div class="sheet-row hidden" id="sheet-row-b">
+        <label>Aba: <select id="sheet-b"></select></label>
+      </div>
+      <div class="file-info" id="info-b"></div>
+    </div>
+  </div>
+
+  <div class="card options-card">
+    <h2>Opções de comparação</h2>
+    <div class="options-grid">
+      <div class="opt-group">
+        <label><input type="checkbox" id="opt-header" checked> Primeira linha é cabeçalho</label>
+        <label><input type="checkbox" id="opt-ignore-case"> Ignorar maiúsculas/minúsculas</label>
+        <label><input type="checkbox" id="opt-ignore-space"> Ignorar espaços extras</label>
+        <label><input type="checkbox" id="opt-ignore-numfmt"> Ignorar formato numérico (1,5 ≡ 1.50)</label>
+      </div>
+      <div class="opt-group">
+        <span class="opt-title">Alinhamento das linhas</span>
+        <label><input type="radio" name="mode" value="position" checked> Por posição (linha 1 ↔ linha 1)</label>
+        <label><input type="radio" name="mode" value="key"> Por coluna(s)-chave</label>
+        <div id="key-cols-wrap" class="hidden">
+          <span class="opt-title">Coluna(s)-chave <span class="hint">(Ctrl+clique para várias)</span></span>
+          <select id="key-cols" multiple size="5"></select>
+        </div>
+      </div>
+      <div class="opt-group">
+        <span class="opt-title">Ordenar antes de comparar <span class="hint">(opcional, Ctrl+clique para várias)</span></span>
+        <select id="sort-cols" multiple size="6"></select>
+        <button class="btn ghost small" id="clear-sort">Limpar ordenação</button>
+      </div>
+    </div>
+    <div class="compare-row">
+      <button class="btn primary big" id="btn-compare" disabled>Comparar planilhas</button>
+      <span id="setup-msg" class="msg"></span>
+    </div>
+  </div>
+</section>
+
+<section id="results" class="results hidden">
+  <div class="toolbar">
+    <div class="toolbar-group summary" id="summary"></div>
+    <div class="toolbar-group">
+      <button class="btn" id="btn-prev" title="Diferença anterior">◀</button>
+      <span id="diff-counter" class="counter">—</span>
+      <button class="btn" id="btn-next" title="Próxima diferença">▶</button>
+      <label class="chk"><input type="checkbox" id="only-diffs"> Só linhas com diferenças</label>
+    </div>
+    <div class="toolbar-group">
+      <button class="btn" id="btn-copy-ab" title="Copiar valor da célula selecionada de A para B">Copiar A → B</button>
+      <button class="btn" id="btn-copy-ba" title="Copiar valor da célula selecionada de B para A">Copiar B → A</button>
+    </div>
+    <div class="toolbar-group">
+      <button class="btn save" id="btn-save-a">💾 Salvar A</button>
+      <button class="btn save" id="btn-save-b">💾 Salvar B</button>
+      <button class="btn" id="btn-recompare" title="Reler os arquivos e comparar de novo">🔄 Re-comparar</button>
+      <button class="btn" id="btn-report">📄 Exportar relatório</button>
+    </div>
+  </div>
+  <div id="warnings" class="warnings hidden"></div>
+  <div class="grids">
+    <div class="grid-block">
+      <div class="grid-label" id="label-a">Planilha A</div>
+      <div id="grid-a" class="grid ag-theme-quartz"></div>
+    </div>
+    <div class="grid-block">
+      <div class="grid-label" id="label-b">Planilha B</div>
+      <div id="grid-b" class="grid ag-theme-quartz"></div>
+    </div>
+  </div>
+  <div class="legend">
+    <span><i class="sw sw-diff"></i> valor diferente</span>
+    <span><i class="sw sw-onlya"></i> linha só em A</span>
+    <span><i class="sw sw-onlyb"></i> linha só em B</span>
+    <span><i class="sw sw-edited"></i> editado (não salvo)</span>
+    <span class="hint">Duplo clique numa célula para editar · clique numa linha para selecioná-la nas duas grades</span>
+  </div>
+</section>
+
+<script src="/static/vendor/ag-grid-community.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>

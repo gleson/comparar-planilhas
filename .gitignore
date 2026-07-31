@@ -1,0 +1,20 @@
+# Ambiente Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Dependências de front-end baixadas pelo run.py (AG Grid)
+/static/vendor/
+
+# Backups criados pela função de salvar
+*.bak
+
+# Sistema operacional / editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
