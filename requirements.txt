@@ -1,3 +1,9 @@
+# Faixa de versões do Python aceita pelo .venv que o run.py cria.
+# Somente versões estáveis: pré-releases (alfa/beta) ainda não têm wheels
+# binários no PyPI (pydantic-core), e a instalação tentaria compilar em
+# Rust/MSVC — o que falha em máquinas sem Visual Studio Build Tools.
+# python_requires: >=3.10,<3.15
+
 fastapi>=0.115
 uvicorn>=0.30
 openpyxl>=3.1

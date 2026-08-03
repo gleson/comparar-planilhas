@@ -6,14 +6,23 @@ arquivo original.
 
 ## Como usar
 
-Requisitos: Python 3.10+ (Linux ou Windows) e internet na primeira execução
-(para baixar as dependências).
+Requisitos: **Python 3.10 a 3.14 estável** (Linux ou Windows) e internet na
+primeira execução (para baixar as dependências).
 
 ```
 python run.py
 ```
 
 O navegador abre automaticamente em `http://localhost:8765`.
+
+> **Não use versões alfa/beta do Python** (ex.: 3.15.0a5, a mais recente na
+> página de downloads do python.org). Para elas ainda não existem pacotes
+> prontos no PyPI, e a instalação tentaria compilar o `pydantic-core` em
+> Rust/MSVC — o que falha em máquinas sem o Visual Studio Build Tools.
+> A faixa suportada fica declarada no `requirements.txt`
+> (`# python_requires: >=3.10,<3.15`); o `run.py` a lê, e se o Python usado
+> estiver fora dela procura automaticamente um interpretador estável já
+> instalado na máquina para criar o `.venv` (no Windows via `py -0p`).
 
 1. Selecione os dois arquivos (botão **Procurar…** ou digitando o caminho).
 2. Escolha a aba de cada planilha (xls/xlsx/ods).
