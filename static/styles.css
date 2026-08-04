@@ -10,15 +10,56 @@ body {
   flex-direction: column;
 }
 
+/* três colunas para a busca ficar centralizada na janela, e não no espaço
+   que sobra entre o título e o botão de configuração */
 .topbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
+  gap: 12px;
+  padding: 6px 14px;
   background: #1f3a5f;
   color: #fff;
 }
-.topbar h1 { font-size: 17px; margin: 0; font-weight: 600; }
+.topbar h1 {
+  font-size: 17px;
+  margin: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar #btn-toggle-setup { grid-column: 3; justify-self: end; }
+.topbar .btn.ghost { color: #fff; border-color: #4b678c; }
+.topbar .btn.ghost:hover:not(:disabled) { background: #2d4d78; }
+.topbar .btn.ghost:disabled { opacity: .35; }
+
+/* busca (barra de título) */
+.topbar .search-group {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.topbar .search-group input[type="search"] {
+  width: 30vw;
+  min-width: 180px;
+  max-width: 460px;
+  padding: 5px 9px;
+  border: 1px solid #4b678c;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #fff;
+  color: #1c2733;
+}
+.topbar .search-group input[type="search"]:focus {
+  outline: 2px solid #8ab4f8;
+  outline-offset: -1px;
+}
+.topbar .search-group .counter { min-width: 104px; font-size: 12px; color: #d6e2f2; }
+.topbar .search-group .counter.nores { color: #ffb4ab; }
+.topbar .chk { margin-left: 0; font-size: 12px; color: #d6e2f2; white-space: nowrap; }
 
 .hidden { display: none !important; }
 .hint { font-weight: normal; font-size: 12px; color: #7a8794; }
@@ -60,6 +101,9 @@ body {
   min-width: 240px;
   padding: 4px;
 }
+.sort-cols-pair { display: flex; gap: 10px; flex-wrap: wrap; }
+.sort-col { display: flex; flex-direction: column; gap: 2px; }
+.sort-col select[multiple] { min-width: 210px; }
 .compare-row { margin-top: 14px; display: flex; align-items: center; gap: 14px; }
 .msg { color: #51606e; }
 .msg.error { color: #b3261e; }
@@ -89,35 +133,90 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 8px 12px 6px;
-  gap: 6px;
+  padding: 6px 12px 4px;
+  gap: 5px;
 }
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 6px 14px;
   flex-wrap: wrap;
   background: #fff;
   border: 1px solid #d8dfe6;
   border-radius: 8px;
-  padding: 6px 12px;
+  padding: 4px 10px;
 }
-.toolbar-group { display: flex; align-items: center; gap: 6px; }
-.summary { font-size: 13px; color: #33404d; }
+.toolbar .btn { padding: 5px 10px; }
+.toolbar-group { display: flex; align-items: center; gap: 5px; }
+.group-label { font-size: 12px; color: #51606e; }
+.summary { font-size: 12px; color: #33404d; cursor: help; }
 .summary b.diff { color: #9a6700; }
 .summary b.onlya { color: #b3261e; }
 .summary b.onlyb { color: #116932; }
-.counter { min-width: 90px; text-align: center; font-variant-numeric: tabular-nums; }
+.counter { min-width: 62px; text-align: center; font-variant-numeric: tabular-nums; cursor: help; }
 .chk { margin-left: 8px; cursor: pointer; }
 
+/* ---------- linha de informação: aviso + valor da célula ---------- */
+.info-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  flex-wrap: wrap;
+}
 .warnings {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 46%;
+  display: flex;
+  align-items: center;
   background: #fff8e1;
   border: 1px solid #e0b400;
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 4px 10px;
   color: #6b5300;
-  font-size: 13px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: help;
 }
+.cell-bar {
+  flex: 1 1 320px;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #d8dfe6;
+  border-radius: 8px;
+  padding: 4px 10px;
+  min-height: 30px;
+}
+.cell-ref {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: #51606e;
+  line-height: 20px;
+  white-space: nowrap;
+}
+.cell-ref:not(:empty) {
+  border-right: 1px solid #d8dfe6;
+  padding-right: 10px;
+}
+.cell-value {
+  flex: 1;
+  min-width: 0;
+  max-height: 40px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+  font-family: "Consolas", "Menlo", monospace;
+  font-size: 13px;
+  line-height: 20px;
+}
+.cell-value.empty { color: #9aa4ae; font-style: italic; }
 
 .grids {
   flex: 1;
@@ -133,21 +232,22 @@ body {
   min-height: 0;
 }
 .grid-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #33404d;
-  padding: 2px 4px;
+  padding: 0 4px 1px;
+  line-height: 14px;
 }
 .grid { flex: 1; min-height: 0; }
 
 .legend {
   display: flex;
-  gap: 18px;
+  gap: 14px;
   align-items: center;
   flex-wrap: wrap;
-  font-size: 12px;
+  font-size: 11px;
   color: #51606e;
-  padding: 2px 4px;
+  padding: 1px 4px;
 }
 .legend .sw {
   display: inline-block;
@@ -162,16 +262,38 @@ body {
 .sw-onlya { background: #ffd6d6; }
 .sw-onlyb { background: #cdeed6; }
 .sw-edited { background: #cfe3ff; }
+.sw-found { background: #d9c9ff; }
 
 /* ---------- células ---------- */
-.ag-theme-quartz {
+/* A classe é repetida de propósito: o AG Grid injeta o CSS do tema em <style>
+   no fim do <head>, depois deste arquivo. Com a mesma especificidade o tema
+   venceria e estas variáveis seriam ignoradas. */
+.ag-theme-quartz.ag-theme-quartz {
   --ag-font-size: 13px;
   --ag-grid-size: 6px;
-  --ag-row-hover-color: #eef3f8;
-  --ag-selected-row-background-color: #d7e7ff;
+  --ag-row-hover-color: #e4ecf4;
+  --ag-selected-row-background-color: #a8caf5;
+}
+/* A linha selecionada também precisa aparecer sobre células que já têm cor
+   própria (diferença, editada, só em A/B): faixa nas bordas + célula do "#". */
+.ag-theme-quartz .ag-row-selected .ag-cell {
+  box-shadow: inset 0 1px 0 #4a86d4, inset 0 -1px 0 #4a86d4;
+}
+.ag-theme-quartz .ag-row-selected .rownum {
+  background: #7fb0ea;
+  color: #10243d;
+  font-weight: 600;
 }
 .cell-diff { background-color: #ffe8a3 !important; }
 .cell-edited { background-color: #cfe3ff !important; font-style: italic; }
+.cell-found { background-color: #d9c9ff !important; }
+/* especificidade alta para o contorno sobreviver à faixa da linha selecionada */
+.ag-theme-quartz .ag-cell.cell-found-active,
+.cell-found-active {
+  background-color: #ffab40 !important;
+  box-shadow: inset 0 0 0 2px #c25e00;
+  font-weight: 600;
+}
 .row-only-this .ag-cell { background-color: var(--only-color); }
 #grid-a .row-only-this { --only-color: #ffd6d6; }
 #grid-b .row-only-this { --only-color: #cdeed6; }

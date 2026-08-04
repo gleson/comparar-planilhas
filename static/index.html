@@ -11,6 +11,14 @@
 <body>
 <header class="topbar">
   <h1>📊 Compara Planilhas</h1>
+  <div class="search-group hidden" id="search-group">
+    <input type="search" id="search-input" placeholder="🔎 Buscar texto nas duas planilhas (Ctrl+F)" autocomplete="off">
+    <button class="btn ghost" id="btn-find-prev" title="Ocorrência anterior (Shift+Enter)">◀</button>
+    <span id="search-counter" class="counter">—</span>
+    <button class="btn ghost" id="btn-find-next" title="Próxima ocorrência (Enter)">▶</button>
+    <label class="chk" title="Esconder as linhas que não contêm o texto buscado">
+      <input type="checkbox" id="only-matches"> só encontradas</label>
+  </div>
   <button id="btn-toggle-setup" class="btn ghost hidden">⚙ Configuração</button>
 </header>
 
@@ -59,8 +67,18 @@
         </div>
       </div>
       <div class="opt-group">
-        <span class="opt-title">Ordenar antes de comparar <span class="hint">(opcional, Ctrl+clique para várias)</span></span>
-        <select id="sort-cols" multiple size="6"></select>
+        <span class="opt-title">Ordenar antes de comparar
+          <span class="hint">(opcional, Ctrl+clique para várias)</span></span>
+        <div class="sort-cols-pair">
+          <label class="sort-col">
+            <span class="hint">Planilha A</span>
+            <select id="sort-cols-a" multiple size="6"></select>
+          </label>
+          <label class="sort-col">
+            <span class="hint">Planilha B</span>
+            <select id="sort-cols-b" multiple size="6"></select>
+          </label>
+        </div>
         <button class="btn ghost small" id="clear-sort">Limpar ordenação</button>
       </div>
     </div>
@@ -78,20 +96,33 @@
       <button class="btn" id="btn-prev" title="Diferença anterior">◀</button>
       <span id="diff-counter" class="counter">—</span>
       <button class="btn" id="btn-next" title="Próxima diferença">▶</button>
-      <label class="chk"><input type="checkbox" id="only-diffs"> Só linhas com diferenças</label>
+      <label class="chk" title="Esconder as linhas iguais nas duas planilhas">
+        <input type="checkbox" id="only-diffs"> só diferenças</label>
     </div>
     <div class="toolbar-group">
-      <button class="btn" id="btn-copy-ab" title="Copiar valor da célula selecionada de A para B">Copiar A → B</button>
-      <button class="btn" id="btn-copy-ba" title="Copiar valor da célula selecionada de B para A">Copiar B → A</button>
+      <button class="btn" id="btn-undo" title="Desfazer a última edição (Ctrl+Z)" disabled>↶</button>
+      <button class="btn" id="btn-redo" title="Refazer a edição desfeita (Ctrl+Y)" disabled>↷</button>
+      <button class="btn" id="btn-clear-order" title="Voltar à ordem original das linhas" disabled>↕ Ordem</button>
     </div>
     <div class="toolbar-group">
-      <button class="btn save" id="btn-save-a">💾 Salvar A</button>
-      <button class="btn save" id="btn-save-b">💾 Salvar B</button>
-      <button class="btn" id="btn-recompare" title="Reler os arquivos e comparar de novo">🔄 Re-comparar</button>
-      <button class="btn" id="btn-report">📄 Exportar relatório</button>
+      <span class="group-label">Copiar célula:</span>
+      <button class="btn" id="btn-copy-ab" title="Copiar o valor da célula selecionada de A para B">A → B</button>
+      <button class="btn" id="btn-copy-ba" title="Copiar o valor da célula selecionada de B para A">B → A</button>
+    </div>
+    <div class="toolbar-group">
+      <button class="btn save" id="btn-save-a" title="Gravar as edições no arquivo da planilha A">💾 Salvar A</button>
+      <button class="btn save" id="btn-save-b" title="Gravar as edições no arquivo da planilha B">💾 Salvar B</button>
+      <button class="btn" id="btn-recompare" title="Reler os arquivos e comparar de novo">🔄</button>
+      <button class="btn" id="btn-report" title="Exportar relatório .xlsx com o resumo e as diferenças destacadas">📄 Relatório</button>
     </div>
   </div>
-  <div id="warnings" class="warnings hidden"></div>
+  <div class="info-row">
+    <div id="warnings" class="warnings hidden"></div>
+    <div id="cell-bar" class="cell-bar">
+      <span id="cell-ref" class="cell-ref"></span>
+      <div id="cell-value" class="cell-value"></div>
+    </div>
+  </div>
   <div class="grids">
     <div class="grid-block">
       <div class="grid-label" id="label-a">Planilha A</div>
@@ -107,7 +138,10 @@
     <span><i class="sw sw-onlya"></i> linha só em A</span>
     <span><i class="sw sw-onlyb"></i> linha só em B</span>
     <span><i class="sw sw-edited"></i> editado (não salvo)</span>
-    <span class="hint">Duplo clique numa célula para editar · clique numa linha para selecioná-la nas duas grades</span>
+    <span><i class="sw sw-found"></i> texto encontrado</span>
+    <span class="hint">Duplo clique numa célula para editar (Ctrl+Z desfaz, Ctrl+Y refaz) ·
+      clique numa linha para selecioná-la nas duas grades ·
+      clique no cabeçalho de uma coluna para ordenar (as duas grades acompanham; Shift+clique para várias)</span>
   </div>
 </section>
 

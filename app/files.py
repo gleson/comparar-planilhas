@@ -5,9 +5,12 @@ funcione em qualquer versão de Python (Linux/Windows) sem compilador C.
 """
 
 import csv
+import re
 import subprocess
 import sys
+import zipfile
 from datetime import date, datetime, time
+from html import unescape
 from pathlib import Path
 
 SUPPORTED_EXTS = {".csv", ".xls", ".xlsx", ".ods"}
@@ -107,11 +110,42 @@ def fmt_cell(v) -> str:
 # Listagem de abas
 # ---------------------------------------------------------------------------
 
+_RE_XLSX_SHEETS = re.compile(r"<sheets\b.*?</sheets>", re.S)
+_RE_XLSX_SHEET_NAME = re.compile(r'<sheet\b[^>]*\bname="([^"]*)"')
+_RE_ODS_TABLE_NAME = re.compile(r'<table:table\b[^>]*\btable:name="([^"]*)"')
+
+
+def _sheet_names_from_zip(path: Path, member: str, pattern: re.Pattern,
+                          scope: re.Pattern | None = None) -> list[str] | None:
+    """Lê os nomes das abas direto do XML do pacote (zip).
+
+    Evita abrir a planilha inteira com openpyxl/odfpy só para listar abas —
+    a diferença é de centenas de milissegundos por arquivo. Devolve None se
+    não der para ler, e aí o chamador usa a biblioteca como alternativa.
+    """
+    try:
+        with zipfile.ZipFile(path) as z:
+            xml = z.read(member).decode("utf-8", "replace")
+    except (OSError, KeyError, zipfile.BadZipFile):
+        return None
+    if scope is not None:
+        m = scope.search(xml)
+        if not m:
+            return None
+        xml = m.group(0)
+    names = [unescape(n) for n in pattern.findall(xml)]
+    return names or None
+
+
 def list_sheets(path: Path) -> list[str]:
     ext = path.suffix.lower()
     if ext == ".csv":
         return []
     if ext == ".xlsx":
+        names = _sheet_names_from_zip(path, "xl/workbook.xml",
+                                      _RE_XLSX_SHEET_NAME, _RE_XLSX_SHEETS)
+        if names is not None:
+            return names
         import openpyxl
         wb = openpyxl.load_workbook(path, read_only=True)
         try:
@@ -123,6 +157,9 @@ def list_sheets(path: Path) -> list[str]:
         book = xlrd.open_workbook(path, on_demand=True)
         return [str(n) for n in book.sheet_names()]
     if ext == ".ods":
+        names = _sheet_names_from_zip(path, "content.xml", _RE_ODS_TABLE_NAME)
+        if names is not None:
+            return names
         from odf.opendocument import load
         from odf.table import Table
         doc = load(str(path))
@@ -232,8 +269,34 @@ def _read_ods(path: Path, sheet: str | None) -> list[list[str]]:
     return rows
 
 
+# Cache das últimas abas lidas. A chave inclui data de modificação e tamanho,
+# então um arquivo alterado no disco (inclusive por "Salvar") é relido sozinho.
+_CACHE_MAX = 6
+_table_cache: dict[tuple, list[list[str]]] = {}
+
+
+def _cache_key(path: Path, sheet: str | None) -> tuple | None:
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    return (str(path), sheet, st.st_mtime_ns, st.st_size)
+
+
 def load_table(path: Path, sheet: str | None) -> list[list[str]]:
     """Carrega uma aba como matriz de strings, com linhas de mesmo comprimento."""
+    key = _cache_key(path, sheet)
+    if key is not None and key in _table_cache:
+        return _table_cache[key]
+    rows = _load_table_uncached(path, sheet)
+    if key is not None:
+        if len(_table_cache) >= _CACHE_MAX:
+            _table_cache.pop(next(iter(_table_cache)))
+        _table_cache[key] = rows
+    return rows
+
+
+def _load_table_uncached(path: Path, sheet: str | None) -> list[list[str]]:
     ext = path.suffix.lower()
     if ext == ".csv":
         encoding, delimiter = detect_csv(path)

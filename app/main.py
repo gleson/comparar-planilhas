@@ -19,6 +19,25 @@ app = FastAPI(title="Compara Planilhas")
 STATE: dict = {"a": None, "b": None, "options": None, "diff": None}
 
 
+@app.on_event("startup")
+def _warm_up_readers():
+    """Importa openpyxl/xlrd/odfpy em segundo plano.
+
+    São imports caros (300ms a 1,4s) e feitos sob demanda na leitura; fazê-los
+    enquanto o usuário ainda escolhe os arquivos evita a espera no primeiro uso.
+    """
+    import threading
+
+    def _load():
+        for mod in ("openpyxl", "xlrd", "odf.opendocument"):
+            try:
+                __import__(mod)
+            except Exception:
+                pass
+
+    threading.Thread(target=_load, daemon=True).start()
+
+
 class InspectReq(BaseModel):
     path: str
 
@@ -38,7 +57,9 @@ class Options(BaseModel):
     has_header: bool = True
     mode: str = "position"          # "position" | "key"
     key_cols: list[int] = []
-    sort_cols: list[int] = []
+    sort_cols: list[int] = []       # compatibilidade: usado nos dois lados
+    sort_cols_a: list[int] | None = None
+    sort_cols_b: list[int] | None = None
     ignore_case: bool = False
     ignore_space: bool = False
     ignore_numfmt: bool = False
@@ -90,9 +111,23 @@ def inspect(req: InspectReq):
         raise HTTPException(400, f"Erro ao ler o arquivo: {e}")
 
 
+def _col_labels(header: list[str], n_cols: int, has_header: bool) -> list[str]:
+    labels = []
+    for c in range(n_cols):
+        name = header[c].strip() if c < len(header) else ""
+        letter = compare_mod.excel_col_name(c)
+        labels.append(f"{letter} — {name}" if name and has_header else letter)
+    return labels
+
+
 @app.post("/api/preview")
 def preview(req: PreviewReq):
-    """Retorna os rótulos de coluna para popular os seletores de chave/ordenação."""
+    """Rótulos de coluna para os seletores de chave e de ordenação.
+
+    `columns` usa o cabeçalho de A (as colunas-chave são por posição, valem
+    para as duas planilhas); `columns_a` e `columns_b` trazem o cabeçalho de
+    cada planilha, para os seletores de ordenação de cada lado.
+    """
     try:
         pa = files.validate_path(req.a.path)
         pb = files.validate_path(req.b.path)
@@ -100,17 +135,16 @@ def preview(req: PreviewReq):
         rows_b = files.load_table(pb, req.b.sheet)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    n_cols = max(
-        max((len(r) for r in rows_a), default=0),
-        max((len(r) for r in rows_b), default=0),
-    )
-    header = rows_a[0] if req.has_header and rows_a else []
-    labels = []
-    for c in range(n_cols):
-        name = header[c].strip() if c < len(header) else ""
-        letter = compare_mod.excel_col_name(c)
-        labels.append(f"{letter} — {name}" if name and req.has_header else letter)
-    return {"columns": labels}
+    cols_a = max((len(r) for r in rows_a), default=0)
+    cols_b = max((len(r) for r in rows_b), default=0)
+    n_cols = max(cols_a, cols_b)
+    header_a = rows_a[0] if req.has_header and rows_a else []
+    header_b = rows_b[0] if req.has_header and rows_b else []
+    return {
+        "columns": _col_labels(header_a, n_cols, req.has_header),
+        "columns_a": _col_labels(header_a, cols_a, req.has_header),
+        "columns_b": _col_labels(header_b, cols_b, req.has_header),
+    }
 
 
 def _run_compare() -> dict:

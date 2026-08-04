@@ -37,14 +37,33 @@ O navegador abre automaticamente em `http://localhost:8765`.
   uma das planilhas destacadas em vermelho (só em A) / verde (só em B).
 - **Alinhamento por posição** ou **por coluna(s)-chave** (detecta linhas
   adicionadas/removidas mesmo fora de ordem), com **ordenação prévia**
-  opcional por uma ou mais colunas.
+  opcional, escolhida **separadamente para cada planilha** (útil quando as
+  duas têm as mesmas colunas em ordem ou com nomes diferentes).
 - Opções de normalização: ignorar maiúsculas/minúsculas, espaços extras e
   formato numérico (`1,5` ≡ `1.50`).
 - **Navegação entre diferenças** (◀/▶ com contador) e filtro
   "só linhas com diferenças".
+- **Ordenação por coluna**: clique no cabeçalho para ordenar (crescente →
+  decrescente → sem ordenação; Shift+clique acrescenta outras colunas).
+  A ordem é aplicada às **duas grades ao mesmo tempo**, usando os valores da
+  planilha em que você clicou — assim as linhas continuam pareadas A ↔ B.
+  Números são ordenados como números (`10,5` antes de `20`), o texto respeita
+  acentuação do português, e linhas ausentes/vazias vão para o fim.
+  O botão **↕ Ordem original** desfaz a ordenação.
+- **Busca de texto** (campo 🔎 na barra de título ou `Ctrl+F`): realça todas as
+  ocorrências nas duas planilhas, ignorando maiúsculas/minúsculas e acentos.
+  `Enter` / `Shift+Enter` (ou ◀/▶) percorrem as ocorrências, `Esc` limpa, e o
+  filtro "só encontradas" esconde o resto.
+- **Barra de valor da célula** (estilo Excel): mostra o conteúdo completo da
+  célula clicada, sem precisar alargar a coluna. Fica vazia quando a seleção
+  não é de uma célula (cabeçalho de coluna ou número da linha).
+- **Largura de coluna espelhada**: redimensionar uma coluna em A ajusta a
+  mesma coluna em B (e vice-versa).
 - **Edição inline** (duplo clique) com gravação no arquivo original
   (botões Salvar A/Salvar B) e botões **Copiar A → B / B → A** para resolver
   divergências.
+- **Desfazer/refazer** as edições ainda não salvas (botões ↶ ↷, `Ctrl+Z` e
+  `Ctrl+Y`); o histórico é zerado a cada gravação ou nova comparação.
 - **Exportar relatório** `.xlsx` com resumo e as duas planilhas com as
   diferenças destacadas.
 

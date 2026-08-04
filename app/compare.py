@@ -69,13 +69,18 @@ def excel_col_name(i: int) -> str:
 def compare(rows_a: list[list[str]], rows_b: list[list[str]], options: dict) -> dict:
     """Compara duas matrizes de strings e retorna o modelo unificado do diff.
 
-    options: has_header, mode ('position'|'key'), key_cols, sort_cols,
+    options: has_header, mode ('position'|'key'), key_cols,
+             sort_cols_a / sort_cols_b (ou sort_cols para os dois lados),
              ignore_case, ignore_space, ignore_numfmt
     """
     has_header = options.get("has_header", True)
     mode = options.get("mode", "position")
     key_cols = options.get("key_cols") or []
     sort_cols = options.get("sort_cols") or []
+    sort_a = options.get("sort_cols_a")
+    sort_b = options.get("sort_cols_b")
+    sort_a = sort_cols if sort_a is None else sort_a
+    sort_b = sort_cols if sort_b is None else sort_b
     normalize = make_normalizer(options)
 
     header_a = rows_a[0] if has_header and rows_a else []
@@ -109,9 +114,10 @@ def compare(rows_a: list[list[str]], rows_b: list[list[str]], options: dict) -> 
     indexed_a = [(i, pad(r)) for i, r in enumerate(data_a)]
     indexed_b = [(i, pad(r)) for i, r in enumerate(data_b)]
 
-    if sort_cols:
-        indexed_a.sort(key=lambda t: _sort_key(t[1], sort_cols))
-        indexed_b.sort(key=lambda t: _sort_key(t[1], sort_cols))
+    if sort_a:
+        indexed_a.sort(key=lambda t: _sort_key(t[1], sort_a))
+    if sort_b:
+        indexed_b.sort(key=lambda t: _sort_key(t[1], sort_b))
 
     # Alinhamento -> lista de pares ((a_idx, a_row) | None, (b_idx, b_row) | None)
     pairs = []
