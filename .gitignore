@@ -12,6 +12,9 @@ __pycache__/
 # Backups criados pela função de salvar
 *.bak
 
+# Planilhas reais para analisar: nunca vão para o repositório
+/local_plan/
+
 # Sistema operacional / editores
 .DS_Store
 Thumbs.db
